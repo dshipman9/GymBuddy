@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import './App.css';
+import { Duration } from "./types";
+import { calculateDuration } from "./calculateDuration";
 
 interface CircleGraphicProps {
   progress: number;
@@ -19,13 +21,13 @@ export const CircleGraphic: React.FC<CircleGraphicProps> = ({ progress, secondsR
         cy="150"
         r={radius}
         fill="none"
-        stroke="#1c525d"
+        stroke="#2c6dce"
         strokeWidth="8"
         strokeDasharray={circumference}
         strokeDashoffset={strokeDashoffset}
         style={{ transition: "stroke-dashoffset 1s ease" }}
       />
-      <text x="150" y="170" textAnchor="middle" fill="black" font-size="75">
+      <text x="150" y="170" textAnchor="middle" fill="white" font-size="75">
         {secondsRemaining}
       </text>
     </svg>
@@ -43,6 +45,7 @@ class WorkoutTimer {
   countdownElement: HTMLElement | null;
   restTimeReset: number;
   exerciseTimeReset: number;
+  workoutDuration: number;
 
   constructor(rounds: number, exercises: String[], exerciseTime: number, restTime: number) {
     this.rounds = rounds;
@@ -55,6 +58,7 @@ class WorkoutTimer {
     this.countdownElement = null;
     this.restTimeReset = restTime;
     this.exerciseTimeReset = exerciseTime;
+    this.workoutDuration = calculateDuration(exerciseTime, restTime, exercises, rounds)[2]
   }
 
   startTimer() {
@@ -70,48 +74,78 @@ class WorkoutTimer {
     }
   }
 
-  // pauseTimer() {
-
-  // }
+  displayWorkoutDuration() {
+    const minutes = Math.floor(this.workoutDuration / 60);
+    const seconds = this.workoutDuration % 60;
+    return (<h1>{minutes}:{seconds.toString().padStart(2, '0')}</h1>);
+  }
 
   updateCountdown() {
     if (!this.countdownElement) return;
+    const workoutDurationDisplay = this.displayWorkoutDuration();
     if (this.exerciseTime >= 0) {
       const circleProgress = 1 - this.exerciseTime / this.exerciseTimeReset;
       ReactDOM.render(
         (
           <div className="workoutDisplay">
-            <h3>Round {this.currentRound}</h3>
-            <h4>{this.exercises[this.currentExerciseIndex]}</h4>
+            <h1>Round {this.currentRound}</h1>
+            <h2>{this.exercises[this.currentExerciseIndex]}</h2>
             <CircleGraphic progress={circleProgress} secondsRemaining={this.exerciseTime}/>
+            <div>{workoutDurationDisplay}</div>
           </div>
         ),
         this.countdownElement
       );
+      if (this.exerciseTime <= 3 && this.exerciseTime > 0) {
+        this.playBeepSound(false);
+      } else if (this.exerciseTime === 0) {
+        this.playBeepSound(true);
+      }
       this.exerciseTime--;
+      this.workoutDuration--;
     } else if (this.restTime >= 0 && !(this.currentRound === this.rounds && this.currentExerciseIndex === this.exercises.length - 1)) {
       const circleProgress = 1 - this.restTime / this.restTimeReset;
       ReactDOM.render(
         (
           <div className="workoutDisplay">
-            <h3>Round {this.currentRound}</h3>
-            <h4>Rest!</h4>
+            <h1>Round {this.currentRound}</h1>
+            <h2>Rest!</h2>
             <CircleGraphic progress={circleProgress} secondsRemaining={this.restTime}/>
-            <h5>Next up: {this.exercises[this.currentExerciseIndex + 1 === this.exercises.length ? 0 : this.currentExerciseIndex + 1]}</h5>
+            <div>{workoutDurationDisplay}</div>
+            <h3 className="nextUp">Next up: {this.exercises[this.currentExerciseIndex + 1 === this.exercises.length ? 0 : this.currentExerciseIndex + 1]}</h3>
           </div>
         ),
         this.countdownElement
       );
+      if (this.restTime <= 3 && this.restTime > 0) {
+        this.playBeepSound(false);
+      } else if (this.restTime === 0) {
+        this.playBeepSound(true);
+      }
       this.restTime--;
+      if (this.restTime + 1 !== this.restTimeReset) {
+        this.workoutDuration--;
+      }
     } else {
       this.moveToNextExercise();
     }
   }
 
+  playBeepSound(long: boolean) {
+    let beepSound;
+    if (long) {
+      beepSound = new Audio(require('./assets/long_beep.mp3'));
+    } else {
+      beepSound = new Audio(require('./assets/short_beep.mp3'));
+    }
+    beepSound.play();
+  }
+
   moveToNextExercise() {
     this.currentExerciseIndex++;
     this.restTime = this.restTimeReset;
-  
+    this.workoutDuration++;
+
     if ((this.currentExerciseIndex + 1) > this.exercises.length) {
       this.currentExerciseIndex = 0;
       this.moveToNextRound();
