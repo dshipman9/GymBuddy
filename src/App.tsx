@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import './App.css';
 import { EXERCISES } from './assets/exercises';
 import { WORKTIMES } from './assets/workTimes';
@@ -14,6 +15,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import openAI from './openaiAPI';
 import { Duration } from './types';
 import { calculateDuration } from './calculateDuration';
+import { WorkoutHistory } from './workoutHistory';
+import TestPage from './pages/workoutDetailsPage/workoutDetailsPage';
 
 function App() {
   const [exercises, setExercises] = useState<Array<String>>([])
@@ -217,6 +220,9 @@ function App() {
           </div>
         )}
       </header>
+      {!workoutGenerated && !isWorkingOut && (
+        <WorkoutHistory/>
+      )}
       <div className='body'>
         {workoutGenerated && !isWorkingOut && exercises.length !== 0 && (
           <div className='workoutDuration'>
@@ -254,7 +260,7 @@ function App() {
                     value={workTime}
                     onChange={(e) => setWorkTime(e.value as number)}
                     step={5}
-                    min={10}
+                    min={5}
                     max={60}
                   />
                 </div>
@@ -380,6 +386,16 @@ function App() {
           </div>
         )}
       </div>
+      <Router>
+      <nav>
+        <ul>
+          <li><Link to="/test">Test Page</Link></li> {/* Add a link to the TestPage */}
+        </ul>
+      </nav>
+      <Routes>
+        <Route path="/test" element={<TestPage />} /> {/* Add a route for the TestPage */}
+      </Routes>
+    </Router>
     </div>
   );
 }

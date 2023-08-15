@@ -1,0 +1,15 @@
+.workoutCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* margin-bottom: 1rem; */
+  margin: 1rem;
+  background-color: #0A192F;
+  border-radius: 10px;
+}
+
+.workoutCardTitle {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

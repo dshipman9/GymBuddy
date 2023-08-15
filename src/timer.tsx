@@ -1,8 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import './App.css';
-import { Duration } from "./types";
 import { calculateDuration } from "./calculateDuration";
+import client from "./apolloClient";
+import { gql } from "@apollo/client";
 
 interface CircleGraphicProps {
   progress: number;
@@ -161,12 +162,50 @@ class WorkoutTimer {
       this.stopTimer();
       if (this.countdownElement) {
         this.countdownElement.innerText = "Workout complete!";
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString("en-GB");
+      client
+        .mutate({
+          mutation: gql`
+            mutation CreateWorkout(
+              $exercises: [String]!
+              $workTime: Int!
+              $restTime: Int!
+              $numberOfRounds: Int!
+              $completedAt: String!
+            ) {
+              createWorkout(
+                exercises: $exercises
+                workTime: $workTime
+                restTime: $restTime
+                numberOfRounds: $numberOfRounds
+                completedAt: $completedAt
+              ) {
+                exercises
+                workTime
+                restTime
+                numberOfRounds
+                completedAt
+              }
+            }
+          `,
+          variables: {
+            exercises: this.exercises,
+            workTime: this.exerciseTimeReset,
+            restTime: this.restTimeReset,
+            numberOfRounds: this.rounds,
+            completedAt: formattedDate,
+          },
+        })
+        .then((response) => {
+          console.log('Workout data sent successfully!', response.data.createWorkout);
+        })
+        }
+      } else {
+        this.currentExerciseIndex = 0;
+        this.exerciseTime = this.exerciseTimeReset;
+        this.restTime = this.restTimeReset;
       }
-    } else {
-      this.currentExerciseIndex = 0;
-      this.exerciseTime = this.exerciseTimeReset;
-      this.restTime = this.restTimeReset;
-    }
   }
 
   initializeCountdownElement(elementId: string) {

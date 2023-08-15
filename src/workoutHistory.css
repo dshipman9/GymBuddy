@@ -1,0 +1,6 @@
+.workoutHistory {
+  padding-left: 1rem;
+  padding-right: 1rem;
+  height: 32rem;
+  overflow-y: scroll;
+}
