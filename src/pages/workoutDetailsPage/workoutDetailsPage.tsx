@@ -11,7 +11,6 @@ import { Toast } from 'primereact/toast';
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Motion, spring } from 'react-motion';
 import './workoutDetailsPage.css'
 import { WorkoutInfo } from '../../components/workoutInfo/workoutInfo';
 
@@ -167,170 +166,166 @@ function WorkoutDetailsPage() {
   }, [workTime, restTime, numberOfRounds, exercises])
 
   return (
-    <Motion defaultStyle={{ x: 100 }} style={{ x: spring(0, { stiffness: 50, damping: 10 }) }}>
-      {interpolatingStyle => (
-         <div style={{ transform: `translateX(${interpolatingStyle.x}%)` }}>
-          <Toast ref={toast} />
-          <Dialog header="Cancel workout?" visible={showConfirmCancel} style={{ width: '80%' }} footer={renderFooter()} onHide={() => setShowConfirmCancel(false)}>
-            <p>Are you sure you want to end this workout early?</p>
-          </Dialog>
-          <header className="App-header">
-            <div className='headerButtons'>
-              <Button onClick={handleCancelWorkoutClick}
-                icon={"pi pi-times"}
-                label={'Cancel'}
-              />
-            </div>
-          </header>
-          <div className='body'>
-            {exercises.length !== 0 && (
-              <div className='workoutDuration'>
-                <h1 style={{ fontSize: '2.5rem' }}>
-                  <i className='pi pi-stopwatch' style={{ fontSize: '2.5rem' }} />
-                  &nbsp;
-                  {workoutDuration?.minutes}:{workoutDuration?.seconds}
-                </h1>
+      <div>
+      <Toast ref={toast} />
+      <Dialog header="Cancel workout?" visible={showConfirmCancel} style={{ width: '80%' }} footer={renderFooter()} onHide={() => setShowConfirmCancel(false)}>
+        <p>Are you sure you want to end this workout early?</p>
+      </Dialog>
+      <header className="App-header">
+        <div className='headerButtons'>
+          <Button onClick={handleCancelWorkoutClick}
+            icon={"pi pi-times"}
+            label={'Cancel'}
+          />
+        </div>
+      </header>
+      <div className='body'>
+        {exercises.length !== 0 && (
+          <div className='workoutDuration'>
+            <h1 style={{ fontSize: '2.5rem' }}>
+              <i className='pi pi-stopwatch' style={{ fontSize: '2.5rem' }} />
+              &nbsp;
+              {workoutDuration?.minutes}:{workoutDuration?.seconds}
+            </h1>
+          </div>
+        )}
+        {!isEditingWorkout && workTime && restTime && numberOfRounds &&(
+          <WorkoutInfo exercises={exercises} workTime={workTime} restTime={restTime} numberOfRounds={numberOfRounds}/>
+        )}
+        {isEditingWorkout && (
+          <>
+            <div className='editRounds'>
+              <h3 style={{ margin: 0 }}> {`Rounds: ${numberOfRounds}`}</h3>
+              <div>
+                <Button
+                  onClick={() => { minusRound(); } }
+                  icon={'pi pi-minus'}
+                  className="p-button-text p-button-rounded" />
+                <Button
+                  onClick={() => { addRound(); } }
+                  icon={'pi pi-plus'}
+                  className="p-button-text p-button-rounded" />
               </div>
-            )}
-            {!isEditingWorkout && workTime && restTime && numberOfRounds &&(
-              <WorkoutInfo exercises={exercises} workTime={workTime} restTime={restTime} numberOfRounds={numberOfRounds}/>
-            )}
-            {isEditingWorkout && (
-              <>
-                <div className='editRounds'>
-                  <h3 style={{ margin: 0 }}> {`Rounds: ${numberOfRounds}`}</h3>
-                  <div>
-                    <Button
-                      onClick={() => { minusRound(); } }
-                      icon={'pi pi-minus'}
-                      className="p-button-text p-button-rounded" />
-                    <Button
-                      onClick={() => { addRound(); } }
-                      icon={'pi pi-plus'}
-                      className="p-button-text p-button-rounded" />
-                  </div>
-                </div>
+            </div>
+            <div>
+              <h3>{`Work: ${workTime}s`}</h3>
+              {isEditingWorkout && (
                 <div>
-                  <h3>{`Work: ${workTime}s`}</h3>
-                  {isEditingWorkout && (
-                    <div>
-                      <Slider
-                        value={workTime}
-                        onChange={(e) => setWorkTime(e.value as number)}
-                        step={5}
-                        min={5}
-                        max={60} />
-                    </div>
-                  )}
+                  <Slider
+                    value={workTime}
+                    onChange={(e) => setWorkTime(e.value as number)}
+                    step={5}
+                    min={5}
+                    max={60} />
                 </div>
-                <div className='restTime'>
-                  <h3>{`Rest: ${restTime}s`}</h3>
-                  {isEditingWorkout && (
-                    <div>
-                      <Slider
-                        value={restTime}
-                        onChange={(e) => setRestTime(e.value as number)}
-                        step={5}
-                        min={5}
-                        max={45}
-                      />
-                    </div>
-                  )}
+              )}
+            </div>
+            <div className='restTime'>
+              <h3>{`Rest: ${restTime}s`}</h3>
+              {isEditingWorkout && (
+                <div>
+                  <Slider
+                    value={restTime}
+                    onChange={(e) => setRestTime(e.value as number)}
+                    step={5}
+                    min={5}
+                    max={45}
+                  />
                 </div>
-              </>
-            )}
-            <div className='dragDropBlock'>
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="exercises">
-                  {(provided) => (
-                    <div {...provided.droppableProps} ref={provided.innerRef}>
-                      {exercises.map((exercise, index) => {
-                          if (isEditingWorkout) {
-                            return (
-                              <Draggable key={index} draggableId={`exercise-${index}`} index={index}>
-                                {(provided) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className='editexercises'
-                                  >
-                                    {isEditingWorkout && (
-                                      <div>
-                                        <Button
-                                          onClick={() => deleteExercise(index)}
-                                          icon={'pi pi-times'}
-                                          className="p-button-text" />
-                                      </div>
-                                    )}
-                                    <div className='dragExercise'>
-                                      <p style={{fontSize: '1.1rem'}}>{exercise}</p>
-                                      {isEditingWorkout && (
-                                        <i className="pi pi-bars" style={{ color: 'var(--primary-color)', fontSize: '1.1rem'}}/>
-                                      )}
-                                    </div>
+              )}
+            </div>
+          </>
+        )}
+        <div className='dragDropBlock'>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="exercises">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef}>
+                  {exercises.map((exercise, index) => {
+                      if (isEditingWorkout) {
+                        return (
+                          <Draggable key={index} draggableId={`exercise-${index}`} index={index}>
+                            {(provided) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className='editexercises'
+                              >
+                                {isEditingWorkout && (
+                                  <div>
+                                    <Button
+                                      onClick={() => deleteExercise(index)}
+                                      icon={'pi pi-times'}
+                                      className="p-button-text" />
                                   </div>
                                 )}
-                              </Draggable>
-                            );
-                          }
-                        })}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            </div>
-            <div className='addExercise'>
-              {isEditingWorkout && (
-                <>
-                <Dropdown
-                  value={selectedExercise}
-                  options={EXERCISES}
-                  placeholder='Add exercise'
-                  onChange={handleExerciseSelection}
-                  style={{'width': '80%'}}
-                />
-                </>
+                                <div className='dragExercise'>
+                                  <p style={{fontSize: '1.1rem'}}>{exercise}</p>
+                                  {isEditingWorkout && (
+                                    <i className="pi pi-bars" style={{ color: 'var(--primary-color)', fontSize: '1.1rem'}}/>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      }
+                    })}
+                  {provided.placeholder}
+                </div>
               )}
-            </div>
-            {/* <div className='optimiseButton'>
-              {isEditingWorkout && (
-                <>
-                <Button
-                  icon={'pi pi-sliders-h'} 
-                  onClick={optimiseOrder}
-                  disabled={exercises.length === 0}
-                  label={'Optimise Order'}
-                />
-                </>
-              )}
-            </div> */}
-            <div className='editButtons'>
-              {isEditingWorkout && (<Button
-                onClick={() => handleCancelEdit()}
-                icon={'pi pi-times'}
-                label={'Cancel'}
-              />)}
-              <Button
-                onClick={() => {isEditingWorkout ? handleSaveWorkout() : handleEditWorkout()}} 
-                icon={isEditingWorkout ? 'pi pi-save' : 'pi pi-pencil'} 
-                disabled={exercises.length === 0}
-                label={isEditingWorkout ? 'Save' : 'Edit'}
-              />
-            </div>
-            {!isEditingWorkout && (
-              <div className='editButtons'>
-                <Button
-                  onClick={startWorkout}
-                  label={'Start Workout'}
-                />
-              </div>
-            )}
-          </div>
+            </Droppable>
+          </DragDropContext>
         </div>
-      )}
-    </Motion>
+        <div className='addExercise'>
+          {isEditingWorkout && (
+            <>
+            <Dropdown
+              value={selectedExercise}
+              options={EXERCISES}
+              placeholder='Add exercise'
+              onChange={handleExerciseSelection}
+              style={{'width': '80%'}}
+            />
+            </>
+          )}
+        </div>
+        {/* <div className='optimiseButton'>
+          {isEditingWorkout && (
+            <>
+            <Button
+              icon={'pi pi-sliders-h'} 
+              onClick={optimiseOrder}
+              disabled={exercises.length === 0}
+              label={'Optimise Order'}
+            />
+            </>
+          )}
+        </div> */}
+        <div className='editButtons'>
+          {isEditingWorkout && (<Button
+            onClick={() => handleCancelEdit()}
+            icon={'pi pi-times'}
+            label={'Cancel'}
+          />)}
+          <Button
+            onClick={() => {isEditingWorkout ? handleSaveWorkout() : handleEditWorkout()}} 
+            icon={isEditingWorkout ? 'pi pi-save' : 'pi pi-pencil'} 
+            disabled={exercises.length === 0}
+            label={isEditingWorkout ? 'Save' : 'Edit'}
+          />
+        </div>
+        {!isEditingWorkout && (
+          <div className='editButtons'>
+            <Button
+              onClick={startWorkout}
+              label={'Start Workout'}
+            />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
