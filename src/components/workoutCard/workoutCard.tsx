@@ -1,7 +1,7 @@
-import { Workout } from './types';
+import { Workout } from '../../types';
 import './workoutCard.css'
-import { calculateDuration } from './calculateDuration';
-import { WorkoutModal } from './workoutModal';
+import { calculateDuration } from '../../calculateDuration';
+import { WorkoutModal } from '../workoutModal/workoutModal';
 import { useEffect, useState } from 'react';
 
 export const WorkoutCard = ({ 
@@ -38,16 +38,16 @@ export const WorkoutCard = ({
       onClick={() => setShowModal(true)}
       >
         <div className='workoutCardTitle'>
-          <h3 style={{ margin: '3px 0' }}>
+          <h3 style={{ margin: '3px 0', fontSize: '1.2rem' }}>
             <i className='pi pi-calendar' />
             &nbsp;{completedAt}
           </h3>
-          <h3 style={{ margin: '3px 0' }}>
+          <h3 style={{ margin: '3px 0', fontSize: '1.2rem' }}>
             <i className='pi pi-stopwatch' />
             &nbsp;{minutes}:{seconds.toString().padStart(2, '0')}
           </h3>
         </div>
-        <p style={{ margin: '3px 0' }}>
+        <p style={{ margin: '3px 0', fontSize: '1.2rem' }}>
           {renderedExercises}
         </p>
       </div>

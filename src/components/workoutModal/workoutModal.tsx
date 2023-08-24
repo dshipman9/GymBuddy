@@ -3,7 +3,8 @@ import './workoutModal.css'
 import { useState } from "react";
 import { Button } from "primereact/button";
 import { gql, useMutation } from "@apollo/client";
-import { CircleGraphic } from "./timer";
+import { useNavigate } from "react-router-dom";
+import { GET_WORKOUTS } from '../workoutHistory/workoutHistory'
 
 interface WorkoutModalProps {
   id: string,
@@ -26,14 +27,24 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
   onHide,
   visible,
 }) => {
-  const [isWorkingOut, setIsWorkingOut] = useState<boolean>(false);
   const [isFavourited, setIsFavourited] = useState<boolean>(false);
   const DELETE_WORKOUT = gql`
     mutation DeleteWorkout($deleteWorkoutId: ID!) {
       deleteWorkout(id: $deleteWorkoutId)
     }
   `;
-  const [deleteWorkoutMutation] = useMutation(DELETE_WORKOUT);
+  const [deleteWorkoutMutation] = useMutation(DELETE_WORKOUT, {
+    refetchQueries: [
+      GET_WORKOUTS,
+      'Workouts'
+    ],
+  });
+  const navigate = useNavigate();
+
+  const handleStartWorkout = () => {
+    navigate('/timer-page', { state: { numberOfRounds, exercises, workTime, restTime } });
+  }
+
   const handleDelete = () => {
     deleteWorkoutMutation({
       variables: {
@@ -54,7 +65,7 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
   }
   return (
     <>
-    <Dialog header={completedAt} visible={visible} style={{ width: '80%' }} onHide={onHide}>
+    <Dialog header={completedAt} visible={visible} style={{ width: '80%' }} onHide={onHide} className="oswald-font">
       <div className='modalHeaderAndFooter'>
         <h3 style={{margin: 0}}>{numberOfRounds} {numberOfRounds === 1 ? 'Round' : 'Rounds'}</h3>
         <i
@@ -69,12 +80,9 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
       ))}
       <div className="modalHeaderAndFooter">
         <Button icon='pi pi-trash' onClick={handleDelete}/>
-        <Button label='Start Workout' onClick={() => setIsWorkingOut(true)}/>
+        <Button label='Start Workout' onClick={handleStartWorkout}/>
       </div>
     </Dialog>
-    {isWorkingOut && (
-      <CircleGraphic progress={0} />
-    )}
     </>
   )
 }

@@ -1,10 +1,10 @@
 import { useQuery, gql } from '@apollo/client';
-import { Workout, WorkoutDto } from './types';
+import { WorkoutDto } from '../../types';
 import { Key } from 'react';
-import { WorkoutCard } from './workoutCard';
+import { WorkoutCard } from '../workoutCard/workoutCard';
 import './workoutHistory.css'
 
-const GET_WORKOUTS = gql`
+export const GET_WORKOUTS = gql`
   query Workouts {
     workouts {
       _id
@@ -21,7 +21,7 @@ export const WorkoutHistory = () => {
   const { loading, error, data } = useQuery(GET_WORKOUTS);
   if (data) {
     return (
-      <><h2 style={{'padding': '1rem'}}>
+      <><h2 className='workoutHistoryTitle'>
         Workout History
       </h2>
       <div className='workoutHistory'>

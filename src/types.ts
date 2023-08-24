@@ -1,6 +1,6 @@
 export type Duration = {
   minutes: number;
-  seconds: number;
+  seconds: string;
 }
 
 export type Workout = {

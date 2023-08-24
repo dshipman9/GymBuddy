@@ -1,0 +1,23 @@
+.roundsWorkRest {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.topInfo {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 20rem;
+  max-height: 35rem;
+}
+
+.sidebyside {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.verticalLine {
+  border-right: 1px solid;
+}

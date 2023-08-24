@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import App from './app/App';
+import reportWebVitals from './app/reportWebVitals';
 import 'primeicons/primeicons.css';
 import 'primereact/resources/themes/bootstrap4-light-purple/theme.css';
 import 'primereact/resources/primereact.min.css';
@@ -10,15 +10,14 @@ import 'primeflex/primeflex.css';
 import client from './apolloClient';
 import { ApolloProvider } from '@apollo/client';
 
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   // <React.StrictMode>
-  <ApolloProvider client={client}>
-    <App />
-  </ApolloProvider>
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
   // </React.StrictMode>
 );
 
