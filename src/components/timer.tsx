@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import client from '../apolloClient';
-import { gql } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
-import { GET_WORKOUTS } from './workoutHistory/workoutHistory';
+import { API, graphqlOperation } from 'aws-amplify';
+import { CreateWorkoutMutation } from '../API';
+import { GraphQLQuery } from '@aws-amplify/api';
+import { createWorkout } from '../graphql/mutations';
 
 interface CircleGraphicProps {
   progress: number;
@@ -35,17 +36,21 @@ export const CircleGraphic: React.FC<CircleGraphicProps> = ({ progress, secondsR
 };
 
 interface WorkoutTimerProps {
+  userId: string | undefined;
   numberOfRounds: number;
   exercises: string[];
   workTime: number;
   restTime: number;
+  isPaused: boolean;
 }
 
 const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
+    userId,
     numberOfRounds,
     exercises,
     workTime,
     restTime,
+    isPaused,
   }) => {
   const calculateTimeLeft = () => {
     const totalTimeInSeconds = (((workTime + restTime + 2) * exercises.length * numberOfRounds) - restTime - (exercises.length));
@@ -61,55 +66,31 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   const [currentRound, setCurrentRound] = useState(1);
   const [isWorking, setIsWorking] = useState(true);
   const [workoutDuration, setWorkoutDuration] = useState(calculateTimeLeft());
+  const [isTimerPaused, setIsTimerPaused] = useState(isPaused);
   const navigate = useNavigate()
-  //TODO: Include beeps
   useEffect(() => {
+    const postWorkout = async () => {
+      try {
+        const currentDate = new Date();
+        const formattedDate = currentDate.toLocaleDateString("en-GB");
+        const input = {
+          userId: userId,
+          exercises: exercises,
+          workTime: workTime,
+          restTime: restTime,
+          numberOfRounds: numberOfRounds,
+          completedAt: formattedDate
+        };
+        await API.graphql<GraphQLQuery<CreateWorkoutMutation>>(graphqlOperation(createWorkout, { input }));
+      } catch (error) {
+        console.error('Error posting workout:', error);
+      }
+    };
     if (timeLeft < 0) {
       if (isWorking) {
         if (currentExercise === exercises.length - 1) {
           if (currentRound === numberOfRounds) {
-            const currentDate = new Date();
-            const formattedDate = currentDate.toLocaleDateString("en-GB");
-            client
-              .mutate({
-                mutation: gql`
-                  mutation CreateWorkout(
-                    $exercises: [String]!
-                    $workTime: Int!
-                    $restTime: Int!
-                    $numberOfRounds: Int!
-                    $completedAt: String!
-                  ) {
-                    createWorkout(
-                      exercises: $exercises
-                      workTime: $workTime
-                      restTime: $restTime
-                      numberOfRounds: $numberOfRounds
-                      completedAt: $completedAt
-                    ) {
-                      exercises
-                      workTime
-                      restTime
-                      numberOfRounds
-                      completedAt
-                    }
-                  }
-                `,
-                variables: {
-                  exercises: exercises,
-                  workTime: workTime,
-                  restTime: restTime,
-                  numberOfRounds: numberOfRounds,
-                  completedAt: formattedDate,
-                },
-                refetchQueries: [
-                  { query: GET_WORKOUTS },
-                ],
-                }
-              )
-              .then((response) => {
-                console.log('Workout data sent successfully!', response.data.createWorkout);
-              });
+            postWorkout();
             navigate('/workout-complete', {state: {numberOfRounds, exercises, workTime, restTime}});
             return;
           } else {
@@ -125,19 +106,36 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       setTimeLeft(isWorking ? restTime * 1000 : workTime * 1000);
     }
   
+    const playBeepSound = (long: boolean) => {
+      let beepSound;
+      if (long) {
+        beepSound = new Audio(require('../assets/long_beep.mp3'));
+      } else {
+        beepSound = new Audio(require('../assets/short_beep.mp3'));
+      }
+      beepSound.play();
+    }
+    
     const interval = setInterval(() => {
-      setTimeLeft(prevTimeLeft => {
-        return prevTimeLeft - 1000;
-      });
-      setWorkoutDuration(prevWorkoutDuration => {
-        return prevWorkoutDuration - 1000;
-      });
+      if (!isPaused) {
+        setTimeLeft(prevTimeLeft => {
+          if (prevTimeLeft <= 4000 && prevTimeLeft > 1000) {
+            playBeepSound(false);
+          } else if (prevTimeLeft === 1000) {
+            playBeepSound(true);
+          }
+          return prevTimeLeft - 1000;
+        });
+        setWorkoutDuration(prevWorkoutDuration => {
+          return prevWorkoutDuration - 1000;
+        });
+      }
     }, 1000);
   
     return () => {
       clearInterval(interval);
     };
-  }, [timeLeft, isWorking, currentExercise, currentRound]);
+  }, [timeLeft, isWorking, currentExercise, currentRound, isPaused]);
   
 
   const displayWorkoutDuration = () => {
@@ -146,8 +144,12 @@ const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     return (<h1>{minutes}:{seconds.toString().padStart(2, '0')}</h1>);
   };
 
+  const handleTimerClick = () => {
+    setIsTimerPaused(prevPaused => !prevPaused);
+  };
+
   return (
-    <div className='timer'>
+    <div className='timer' onClick={handleTimerClick}>
       <div className="workoutDisplay">
         <h1>Round {currentRound}</h1>
         <h2>{isWorking ? exercises[currentExercise] : 'Rest!'}</h2>

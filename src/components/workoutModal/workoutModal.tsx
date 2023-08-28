@@ -2,9 +2,11 @@ import { Dialog } from "primereact/dialog";
 import './workoutModal.css'
 import { useState } from "react";
 import { Button } from "primereact/button";
-import { gql, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { GET_WORKOUTS } from '../workoutHistory/workoutHistory'
+import { API, graphqlOperation } from "aws-amplify";
+import { DeleteWorkoutMutation } from "../../API";
+import { GraphQLQuery } from '@aws-amplify/api';
+import { deleteWorkout } from "../../graphql/mutations";
 
 interface WorkoutModalProps {
   id: string,
@@ -28,35 +30,25 @@ export const WorkoutModal: React.FC<WorkoutModalProps> = ({
   visible,
 }) => {
   const [isFavourited, setIsFavourited] = useState<boolean>(false);
-  const DELETE_WORKOUT = gql`
-    mutation DeleteWorkout($deleteWorkoutId: ID!) {
-      deleteWorkout(id: $deleteWorkoutId)
-    }
-  `;
-  const [deleteWorkoutMutation] = useMutation(DELETE_WORKOUT, {
-    refetchQueries: [
-      GET_WORKOUTS,
-      'Workouts'
-    ],
-  });
   const navigate = useNavigate();
 
   const handleStartWorkout = () => {
     navigate('/timer-page', { state: { numberOfRounds, exercises, workTime, restTime } });
   }
 
+  const deleteWorkoutFunc = async () => {
+    try {
+      const input = {
+        id: id
+      };
+      await API.graphql<GraphQLQuery<DeleteWorkoutMutation>>(graphqlOperation(deleteWorkout, { input }));
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+    }
+  };
+
   const handleDelete = () => {
-    deleteWorkoutMutation({
-      variables: {
-        deleteWorkoutId: id,
-      },
-    })
-      .then((response) => {
-        console.log('Workout deleted successfully', response);
-      })
-      .catch((error) => {
-        console.error('Error deleting workout', error);
-      });
+    deleteWorkoutFunc();
     onHide();
   }
   const handleFavourite = () => {

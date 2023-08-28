@@ -2,7 +2,11 @@ import { Button } from 'primereact/button';
 import { useNavigate } from 'react-router-dom';
 import { WorkoutHistory } from '../../components/workoutHistory/workoutHistory';
 
-function HomePage() {
+interface HomePageProps {
+  userId: string | undefined;
+}
+
+const HomePage: React.FC<HomePageProps> = ({ userId }) => {
   const navigate = useNavigate();
 
   const handleGenerateWorkoutClick = () => {
@@ -30,7 +34,7 @@ function HomePage() {
           />
         </div>
       </header>
-      <WorkoutHistory/>
+      <WorkoutHistory userId={userId}/>
     </div>
   );
 }

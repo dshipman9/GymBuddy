@@ -1,0 +1,23 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-amplify9f3dd12e68184-staging-84406-authRole",
+      "UnauthRoleArn": "arn:aws:iam::738595673519:role/amplify-amplify9f3dd12e68184-staging-84406-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::738595673519:role/amplify-amplify9f3dd12e68184-staging-84406-authRole",
+      "Region": "eu-west-2",
+      "DeploymentBucketName": "amplify-amplify9f3dd12e68184-staging-84406-deployment",
+      "UnauthRoleName": "amplify-amplify9f3dd12e68184-staging-84406-unauthRole",
+      "StackName": "amplify-amplify9f3dd12e68184-staging-84406",
+      "StackId": "arn:aws:cloudformation:eu-west-2:738595673519:stack/amplify-amplify9f3dd12e68184-staging-84406/8d4af400-4323-11ee-9f63-0ac09455b1d8",
+      "AmplifyAppId": "d2is3s9u62uece"
+    },
+    "categories": {
+      "auth": {
+        "gymbuddy1a48af57": {}
+      },
+      "api": {
+        "GymBuddy": {}
+      }
+    }
+  }
+}

@@ -13,10 +13,11 @@ export type Workout = {
 }
 
 export type WorkoutDto = {
-  _id: string,
-  exercises: string[];
-  workTime: number;
-  restTime: number;
-  numberOfRounds: number;
-  completedAt: string;
+  id: string | undefined,
+  userId: string | undefined,
+  exercises: (string | null)[] | undefined;
+  workTime: number | undefined;
+  restTime: number | undefined;
+  numberOfRounds: number | undefined;
+  completedAt: string | undefined;
 }

@@ -1,0 +1,10 @@
+type Workout @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  userId: String!
+  workTime: Int!
+  restTime: Int!
+  numberOfRounds: Int!
+  completedAt: String!
+  exercises: [String]!
+}
+ 
